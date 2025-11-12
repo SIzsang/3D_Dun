@@ -10,6 +10,8 @@ public class PlayerController : MonoBehaviour
     public float moveSpeed;
     public float jumpPower;
     public float dashPower;
+    public float itemSpeed;
+    public float itemDuration;
     private Vector2 currentMoveInput; // Input Action에서 받아올 값들을 넣어줄 곳
     public LayerMask groundLayerMask;
 
@@ -36,6 +38,10 @@ public class PlayerController : MonoBehaviour
     {
         Cursor.lockState = CursorLockMode.Locked; // 마우스 커서를 Lock, 숨기기
     }
+    private void Update()
+    {
+        
+    }
     private void FixedUpdate() // 물리연산을 하는 곳은 FixedUpdate
     {
         Move();
@@ -49,13 +55,29 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    private void OnEnable()
+    {
+        PlayerEvents.ItemSpeedBoost += UseItemSpeed;
+    }
+
+    private void OnDisable()
+    {
+        PlayerEvents.ItemSpeedBoost -= UseItemSpeed;
+    }
+
     void Move()
     {
         Vector3 dir = transform.forward * currentMoveInput.y + transform.right * currentMoveInput.x;
-        dir *= moveSpeed + dashPower;
+        dir *= moveSpeed + dashPower + itemSpeed;
         dir.y = _rigidbody.velocity.y;
 
         _rigidbody.velocity = dir;
+    }
+
+    void UseItemSpeed(float amout, float duration)
+    {
+        itemSpeed = amout;
+        itemDuration = duration;
     }
 
     void CameraLook()
