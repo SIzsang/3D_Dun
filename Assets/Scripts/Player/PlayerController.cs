@@ -12,6 +12,7 @@ public class PlayerController : MonoBehaviour
     public float dashPower;
     public float itemSpeed;
     public float itemDuration;
+    private bool isDashing;
     private Vector2 currentMoveInput; // Input Action에서 받아올 값들을 넣어줄 곳
     public LayerMask groundLayerMask;
 
@@ -40,12 +41,34 @@ public class PlayerController : MonoBehaviour
     }
     private void Update()
     {
-        
+        if (isDashing)
+        {
+            float staminaPerSecond = 20f;
+            bool canDash = true;
+
+            if (PlayerEvents.Run != null)
+            {
+                // Update라면 Time.deltaTime 사용
+                canDash = PlayerEvents.Run.Invoke(staminaPerSecond * Time.deltaTime);
+            }
+
+            if (canDash)
+            {
+                dashPower = 5f;
+            }
+            else
+            {
+                isDashing = false;
+                dashPower = 0f;
+            }
+        }
     }
-    private void FixedUpdate() // 물리연산을 하는 곳은 FixedUpdate
+    // 물리연산을 하는 곳은 FixedUpdate
+    private void FixedUpdate()
     {
         Move();
     }
+
 
     private void LateUpdate()
     {
@@ -53,6 +76,7 @@ public class PlayerController : MonoBehaviour
         {
             CameraLook();
         }
+        
     }
 
     private void OnEnable()
@@ -83,25 +107,32 @@ public class PlayerController : MonoBehaviour
     void CameraLook()
     {
         camCurXRot += mouseDelta.y * lookSensitivity; // 마우스Y의 이동량 * 민감도 = X축의 회전값, 즉 상하 각도
-        // 마우스 움직임은 Y값이지만 그것을 돌리려면 X값이 넣어야함
+        // 마우스 움직임은 Y값이지만 그것을 돌리려면 X값을 넣어야함
         camCurXRot = Mathf.Clamp(camCurXRot, minXLook, maxXLook); // 회전값 제한
         cameraContainer.localRotation = Quaternion.Euler(-camCurXRot, 0f, 0f);
 
         transform.rotation *= Quaternion.Euler(0f, mouseDelta.x * lookSensitivity, 0f);
 
-        //cameraContainer.localEulerAngles = new Vector3(-camCurXRot, 0, 0);
+        float distance = 5f; // 카메라 거리
+        Vector3 desiredPosition = cameraContainer.position - cameraContainer.forward * distance;
 
-        //transform.eulerAngles = new Vector3(0, mouseDelta.x + lookSensitivity, 0);
+        Camera.main.transform.position = Vector3.Lerp(Camera.main.transform.position, desiredPosition, Time.deltaTime * 10f);
+        Camera.main.transform.LookAt(cameraContainer.position + cameraContainer.forward * 2f);
+    
 
-        // 마우스의 움직임이 없다면 0 * 민감도 이므로 회전값이 없는 것
-        // +가 들어갈 수 없는 이유는 매 프레임마다 고정된 회전값을 설정하기 때문.
-        // 실제로 +를 사용하면 오른쪽으로 계속 회전한다.
+    //cameraContainer.localEulerAngles = new Vector3(-camCurXRot, 0, 0);
 
-        // 회전값
-        // 회전값 제한
-        // 실제 회전값을 넣어준 것 X
-        // 실제 회전값을 넣어준 것 Y
-    }
+    //transform.eulerAngles = new Vector3(0, mouseDelta.x + lookSensitivity, 0);
+
+    // 마우스의 움직임이 없다면 0 * 민감도 이므로 회전값이 없는 것
+    // +가 들어갈 수 없는 이유는 매 프레임마다 고정된 회전값을 설정하기 때문.
+    // 실제로 +를 사용하면 오른쪽으로 계속 회전한다.
+
+    // 회전값
+    // 회전값 제한
+    // 실제 회전값을 넣어준 것 X
+    // 실제 회전값을 넣어준 것 Y
+}
 
     public void OnMove(InputAction.CallbackContext context)
     {
@@ -118,13 +149,15 @@ public class PlayerController : MonoBehaviour
     {
         if (context.phase == InputActionPhase.Performed)
         {
-            dashPower = 5f;
+            isDashing = true;
         }
         else if (context.phase == InputActionPhase.Canceled)
         {
+            isDashing = false;
             dashPower = 0f;
         }
     }
+    
 
     public void OnLook(InputAction.CallbackContext context)
     {
@@ -151,7 +184,7 @@ public class PlayerController : MonoBehaviour
 
         for(int i = 0; i < rays.Length; i++)
         {
-            if (Physics.Raycast(rays[i], 0.6f, groundLayerMask))
+            if (Physics.Raycast(rays[i], 1f, groundLayerMask))
                 // 캐릭터 position.y 값 0.5 >> Ray 0.6
             {
                 return true;

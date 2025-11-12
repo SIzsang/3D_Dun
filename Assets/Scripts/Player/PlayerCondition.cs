@@ -35,6 +35,15 @@ public class PlayerCondition : MonoBehaviour, IDamageable
             Die();
         }
     }
+    private void OnEnable()
+    {
+        PlayerEvents.Run += RunStaminaReduction;
+    }
+
+    private void OnDisable()
+    {
+        PlayerEvents.Run -= RunStaminaReduction;
+    }
     public void Heal(float amount)
     {
         Health.Add(amount);
@@ -54,6 +63,12 @@ public class PlayerCondition : MonoBehaviour, IDamageable
     {
         Health.Subtract(damage);
         OnTakeDamage?.Invoke();
+    }
+
+    private bool RunStaminaReduction(float amount)
+    {
+        Debug.Log($"[Run Event Triggered] stamina reduce: {amount}");
+        return UseStamina(amount);
     }
 
     public bool UseStamina(float amount)
