@@ -14,8 +14,10 @@ public class PlayerController : MonoBehaviour
     public float itemSpeed;
     public float itemDuration;
     private bool isDashing;
+    public int wallSpeed;
     private Vector2 currentMoveInput; // Input Action에서 받아올 값들을 넣어줄 곳
     public LayerMask groundLayerMask;
+    public LayerMask wallLayerMask;
 
 
 
@@ -66,7 +68,14 @@ public class PlayerController : MonoBehaviour
     // 물리연산을 하는 곳은 FixedUpdate
     private void FixedUpdate()
     {
-        Move();
+        if (IsWall()) // 벽이 감지되면
+        {
+            WallMove(); // 벽 위로 이동
+        }
+        else
+        {
+            Move();
+        }
     }
 
 
@@ -125,6 +134,25 @@ public class PlayerController : MonoBehaviour
         // 회전값 제한
         // 실제 회전값을 넣어준 것 X
         // 실제 회전값을 넣어준 것 Y
+    }
+    private void WallMove()
+    {
+        Vector3 dir = transform.right * currentMoveInput.x + transform.up * currentMoveInput.y;
+        dir *= wallSpeed;
+        _rigidbody.velocity = dir;
+    }
+
+    private bool IsWall()
+    {
+        float radius = 0.4f;
+        Vector3 center = transform.position + transform.up * 1.0f;
+        Collider[] hits = Physics.OverlapSphere(center, radius, wallLayerMask);
+        if (hits.Length > 0)
+        {
+            Debug.Log("벽 감지");
+            return true;
+        }
+        return false;
     }
 
     public void OnMove(InputAction.CallbackContext context)
