@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -48,7 +49,6 @@ public class PlayerController : MonoBehaviour
 
             if (PlayerEvents.Run != null)
             {
-                // Update라면 Time.deltaTime 사용
                 canDash = PlayerEvents.Run.Invoke(staminaPerSecond * Time.deltaTime);
             }
 
@@ -113,26 +113,19 @@ public class PlayerController : MonoBehaviour
 
         transform.rotation *= Quaternion.Euler(0f, mouseDelta.x * lookSensitivity, 0f);
 
-        float distance = 5f; // 카메라 거리
-        Vector3 desiredPosition = cameraContainer.position - cameraContainer.forward * distance;
+        //cameraContainer.localEulerAngles = new Vector3(-camCurXRot, 0, 0);
 
-        Camera.main.transform.position = Vector3.Lerp(Camera.main.transform.position, desiredPosition, Time.deltaTime * 10f);
-        Camera.main.transform.LookAt(cameraContainer.position + cameraContainer.forward * 2f);
-    
+        //transform.eulerAngles = new Vector3(0, mouseDelta.x + lookSensitivity, 0);
 
-    //cameraContainer.localEulerAngles = new Vector3(-camCurXRot, 0, 0);
+        // 마우스의 움직임이 없다면 0 * 민감도 이므로 회전값이 없는 것
+        // +가 들어갈 수 없는 이유는 매 프레임마다 고정된 회전값을 설정하기 때문.
+        // 실제로 +를 사용하면 오른쪽으로 계속 회전한다.
 
-    //transform.eulerAngles = new Vector3(0, mouseDelta.x + lookSensitivity, 0);
-
-    // 마우스의 움직임이 없다면 0 * 민감도 이므로 회전값이 없는 것
-    // +가 들어갈 수 없는 이유는 매 프레임마다 고정된 회전값을 설정하기 때문.
-    // 실제로 +를 사용하면 오른쪽으로 계속 회전한다.
-
-    // 회전값
-    // 회전값 제한
-    // 실제 회전값을 넣어준 것 X
-    // 실제 회전값을 넣어준 것 Y
-}
+        // 회전값
+        // 회전값 제한
+        // 실제 회전값을 넣어준 것 X
+        // 실제 회전값을 넣어준 것 Y
+    }
 
     public void OnMove(InputAction.CallbackContext context)
     {

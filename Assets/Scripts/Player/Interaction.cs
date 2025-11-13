@@ -30,6 +30,7 @@ public class Interaction : MonoBehaviour
             lastCheckTime = Time.time;
 
             Ray ray = camera.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2, 0));
+            // Ray ray = new Ray(Camera.main.transform.position, Camera.main.transform.forward);
             RaycastHit hit;
 
             if (Physics.Raycast(ray, out hit, maxCheckDistance, layerMask)) // 충돌이 된 물체가 있다면 hit에 정보를 넘겨준다. / 길이 / 레이어 마스크
